@@ -1,26 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { useNavigation } from 'expo-router';
-import { Player } from '../models/types'; // Importa el tipo Player desde types.ts
-import { getPlayers } from '../services/playerService'; // Asegúrate de importar correctamente
-import { RootStackParamList } from '../models/types'; // Asegúrate de importar los tipos correctamente
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'; 
-
-// Tipado de la navegación
-type HomeNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+import { useRouter } from 'expo-router';
+import { Player } from '../models/types'; 
+import { getPlayers } from '../services/playerService'; 
 
 export default function Home() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [filteredPlayers, setFilteredPlayers] = useState<Player[]>([]);
   const [searchText, setSearchText] = useState('');
   const [selectedPosition, setSelectedPosition] = useState('');
-  const navigation = useNavigation<HomeNavigationProp>();
+  const router = useRouter();
 
   const positions = ['Base', 'Escolta', 'Alero', 'Ala-Pívot', 'Pívot'];
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getPlayers(); // Usa getPlayers
+      const data = await getPlayers(); 
       setPlayers(data);
       setFilteredPlayers(data);
     };
@@ -41,8 +36,9 @@ export default function Home() {
   };
 
   const goToPlayer = (id: string) => {
-    navigation.navigate('PlayerDetail', { id });
+    router.push(`/player/${id}`);
   };
+  
 
   return (
     <View style={styles.container}>
