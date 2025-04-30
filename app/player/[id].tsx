@@ -1,5 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions, Platform } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  useWindowDimensions,
+  Platform,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Video as ExpoVideo, ResizeMode } from "expo-av";
@@ -13,6 +22,7 @@ export default function PlayerDetailScreen() {
   const [player, setPlayer] = useState<Player | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [playerIndex, setPlayerIndex] = useState<number>(0);
+  const [zoomImageUri, setZoomImageUri] = useState<string | null>(null);
   const videoRef = useRef<ExpoVideo>(null);
   const { width: screenWidth } = useWindowDimensions();
 
@@ -27,7 +37,7 @@ export default function PlayerDetailScreen() {
       if (index !== -1) {
         setPlayer(allPlayers[index]);
       } else {
-        router.replace("/"); // Si no existe jugador, vuelve al home
+        router.replace("/");
       }
     };
 
@@ -49,8 +59,12 @@ export default function PlayerDetailScreen() {
   };
 
   const goBack = () => {
-    router.replace("/");
+    router.push("/media");
   };
+
+  const goHome = () => {
+    router.push("/")
+  }
 
   if (!player) {
     return (
@@ -63,12 +77,20 @@ export default function PlayerDetailScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#111" }}>
       <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.buttons}>
         <TouchableOpacity onPress={goBack} style={styles.backButton}>
           <Text style={styles.backText}>⬅ Volver</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity onPress={goHome} style={styles.backButton}>
+          <Text style={styles.backText}>Inicio</Text>
+        </TouchableOpacity>
+        </View>
+        
         <View style={styles.detailContainer}>
-          <Image source={{ uri: player.imageUrl }} style={styles.image} />
+          <TouchableOpacity onPress={() => setZoomImageUri(player.imageUrl)}>
+            <Image source={{ uri: player.imageUrl }} style={styles.image} />
+          </TouchableOpacity>
           <View style={styles.info}>
             <Text style={styles.name}>{player.name}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Posición:</Text> {player.position}</Text>
@@ -102,6 +124,18 @@ export default function PlayerDetailScreen() {
             <Text style={styles.navText}>Siguiente</Text>
           </TouchableOpacity>
         </View>
+
+        {zoomImageUri && (
+          <View style={styles.zoomOverlay}>
+            <TouchableOpacity onPress={() => setZoomImageUri(null)} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+            <Image
+              source={{ uri: zoomImageUri }}
+              style={styles.zoomedImage}
+            />
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -118,10 +152,16 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
   },
+  buttons: {
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    width: "100%"
+  },
   container: {
     padding: 20,
     backgroundColor: "#111",
     paddingBottom: 40,
+    justifyContent: "space-between",
   },
   backButton: {
     marginBottom: 18,
@@ -129,6 +169,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#222",
     padding: 10,
     borderRadius: 8,
+    flexDirection: "row",
   },
   backText: {
     color: "#fff",
@@ -200,5 +241,32 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  zoomOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 11,
+  },
+  closeButtonText: {
+    color: 'white',
+    fontSize: 28,
+  },
+  zoomedImage: {
+    width: '90%',
+    height: '70%',
+    resizeMode: 'contain',
+    borderRadius: 12,
   },
 });

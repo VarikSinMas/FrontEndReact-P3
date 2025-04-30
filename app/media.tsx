@@ -25,8 +25,15 @@ export default function MediaScreen() {
     (selectedPosition ? player.position === selectedPosition : true)
   );
 
+  const goBack = () => {
+    router.push("/");
+  };
+
   return (
     <View style={styles.container}>
+      <TouchableOpacity onPress={goBack} style={styles.backButton}>
+        <Text style={styles.backText}>⬅ Volver</Text>
+      </TouchableOpacity>
       {/* Buscador */}
       <TextInput
         style={styles.searchInput}
@@ -91,6 +98,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#111", 
     paddingTop: 20,
     paddingHorizontal: 10,
+  },
+  backButton: {
+    marginBottom: 18,
+    alignSelf: "flex-start",
+    backgroundColor: "#222",
+    padding: 10,
+    borderRadius: 8,
+  },
+  backText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 15,
   },
   searchInput: {
     height: 40,
