@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, FlatList, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { Player } from "../models/types";
 import { getPlayers } from "../services/playerService";
-import { Link } from "expo-router";
-
+import { useRouter } from "expo-router";
 
 const positions = ["Base", "Escolta", "Alero", "Ala-Pívot", "Pívot"];
 
@@ -11,6 +10,7 @@ export default function MediaScreen() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [searchText, setSearchText] = useState<string>("");
   const [selectedPosition, setSelectedPosition] = useState<string>("");
+  const router = useRouter();
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -29,11 +29,11 @@ export default function MediaScreen() {
     <View style={styles.container}>
       {/* Buscador */}
       <TextInput
-        style={styles.searchBox}
+        style={styles.searchInput}
         placeholder="Buscar jugador..."
         value={searchText}
         onChangeText={setSearchText}
-        placeholderTextColor="#999"
+        placeholderTextColor="#bbb"
       />
 
       {/* Filtros */}
@@ -41,38 +41,45 @@ export default function MediaScreen() {
         {positions.map(pos => (
           <TouchableOpacity
             key={pos}
-            onPress={() => setSelectedPosition(pos)}
-            style={[styles.filterButton, selectedPosition === pos && styles.activeFilter]}
+            onPress={() => setSelectedPosition(selectedPosition === pos ? "" : pos)}
+            style={[
+              styles.filterButton,
+              selectedPosition === pos && styles.activeFilter
+            ]}
           >
-            <Text style={styles.filterText}>{pos}</Text>
+            <Text style={[
+              styles.filterText,
+              selectedPosition === pos && styles.activeFilterText
+            ]}>
+              {pos}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
 
       {/* Listado en grilla */}
-      
       <FlatList
         data={filteredPlayers}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => item.id ? item.id : index.toString()}
         renderItem={({ item }) => (
           <View style={styles.playerCard}>
             <Image source={{ uri: item.imageUrl }} style={styles.playerImage} />
             <Text style={styles.playerName}>{item.name}</Text>
             <Text style={styles.playerPosition}>{item.position}</Text>
-            <Link href={`/player/${item.id}`} asChild>
-              <TouchableOpacity style={styles.detailButton}>
-                <Text style={styles.detailButtonText}>Ver Detalles</Text>
-              </TouchableOpacity>
-            </Link>
+            <TouchableOpacity
+              style={styles.detailButton}
+              onPress={() => router.push(`/player/${item.id}`)}
+            >
+              <Text style={styles.detailButtonText}>Ver Detalles</Text>
+            </TouchableOpacity>
           </View>
         )}
         showsVerticalScrollIndicator={false}
-        numColumns={3} // mostramos 3 tarjetas por fila
-        contentContainerStyle={{
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingVertical: 20,
-        }}
+        numColumns={2}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No se encontraron jugadores.</Text>
+        }
       />
     </View>
   );
@@ -81,15 +88,15 @@ export default function MediaScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "darkred", // rojo oscuro
+    backgroundColor: "#111", 
     paddingTop: 20,
     paddingHorizontal: 10,
   },
-  searchBox: {
+  searchInput: {
     height: 40,
     backgroundColor: "#fff",
-    borderRadius: 8,
-    paddingHorizontal: 10,
+    borderRadius: 10,
+    paddingHorizontal: 12,
     color: "#000",
     marginBottom: 15,
     fontSize: 16,
@@ -102,67 +109,88 @@ const styles = StyleSheet.create({
   },
   filterButton: {
     borderWidth: 1,
-    borderColor: "white",
+    borderColor: "red",
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 20,
     margin: 5,
     backgroundColor: "#222",
+    minWidth: 80,
+    alignItems: "center",
   },
   activeFilter: {
     backgroundColor: "red",
   },
   filterText: {
     color: "#fff",
-    fontSize: 14,
+    fontSize: 15,
+    fontWeight: "bold",
+  },
+  activeFilterText: {
+    color: "#fff",
   },
   listContent: {
-    paddingBottom: 20,
+    paddingBottom: 30,
+    alignItems: "center",
   },
   playerCard: {
-    backgroundColor: "#fff",
+    backgroundColor: "#333",
     borderRadius: 12,
     padding: 15,
     margin: 10,
-    width: 250, // <<< MÁS ESTRECHA
+    width: 180,
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    elevation: 4,
-  },  
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: "#222",
+  },
   playerImage: {
     width: 100,
     height: 100,
     borderRadius: 10,
     marginBottom: 10,
     resizeMode: "cover",
+    backgroundColor: "#222",
   },
   playerName: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#222",
+    color: "#fff",
     textAlign: "center",
+    marginBottom: 2,
   },
   playerPosition: {
     fontSize: 14,
-    color: "#666",
+    color: "#ccc",
     textAlign: "center",
     marginBottom: 10,
   },
   detailButton: {
     backgroundColor: "red",
-    paddingVertical: 6,
-    paddingHorizontal: 20,
+    paddingVertical: 7,
+    paddingHorizontal: 18,
     borderRadius: 20,
-    marginTop: 8,
+    marginTop: 6,
+    shadowColor: "#d00000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   detailButtonText: {
     color: "#fff",
     fontSize: 14,
     fontWeight: "bold",
+  },
+  emptyText: {
+    color: "#fff",
+    fontSize: 16,
+    marginTop: 40,
+    textAlign: "center",
   },
 });
 
