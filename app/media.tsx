@@ -1,8 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, FlatList, Image, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import { Player } from "../models/types";
 import { getPlayers } from "../services/playerService";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 
 const positions = ["Base", "Escolta", "Alero", "Ala-Pívot", "Pívot"];
 
@@ -20,75 +28,106 @@ export default function MediaScreen() {
     fetchPlayers();
   }, []);
 
-  const filteredPlayers = players.filter(player =>
-    player.name.toLowerCase().includes(searchText.toLowerCase()) &&
-    (selectedPosition ? player.position === selectedPosition : true)
+  const filteredPlayers = players.filter(
+    (player) =>
+      player.name.toLowerCase().includes(searchText.toLowerCase()) &&
+      (selectedPosition ? player.position === selectedPosition : true)
   );
 
   return (
-    <View style={styles.container}>
-      {/* Buscador */}
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Buscar jugador..."
-        value={searchText}
-        onChangeText={setSearchText}
-        placeholderTextColor="#bbb"
-      />
-
-      {/* Filtros */}
-      <View style={styles.filterContainer}>
-        {positions.map(pos => (
-          <TouchableOpacity
-            key={pos}
-            onPress={() => setSelectedPosition(selectedPosition === pos ? "" : pos)}
-            style={[
-              styles.filterButton,
-              selectedPosition === pos && styles.activeFilter
-            ]}
-          >
-            <Text style={[
-              styles.filterText,
-              selectedPosition === pos && styles.activeFilterText
-            ]}>
-              {pos}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Listado en grilla */}
-      <FlatList
-        data={filteredPlayers}
-        keyExtractor={(item, index) => item.id ? item.id : index.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.playerCard}>
-            <Image source={{ uri: item.imageUrl }} style={styles.playerImage} />
-            <Text style={styles.playerName}>{item.name}</Text>
-            <Text style={styles.playerPosition}>{item.position}</Text>
+    <>
+      <Stack.Screen
+        options={{
+          title: "Jugadores",
+          headerRight: () => (
             <TouchableOpacity
-              style={styles.detailButton}
-              onPress={() => router.push(`/player/${item.id}`)}
+              onPress={() => router.push("/")}
+              style={{
+                marginRight: 12,
+                backgroundColor: "#fff",
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 6,
+              }}
             >
-              <Text style={styles.detailButtonText}>Ver Detalles</Text>
+              <Text style={{ color: "#d00000", fontWeight: "bold" }}>
+                Inicio
+              </Text>
             </TouchableOpacity>
-          </View>
-        )}
-        showsVerticalScrollIndicator={false}
-        numColumns={2}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No se encontraron jugadores.</Text>
-        }
+          ),
+        }}
       />
-    </View>
+      <View style={styles.container}>
+        {/* Buscador */}
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar jugador..."
+          value={searchText}
+          onChangeText={setSearchText}
+          placeholderTextColor="#bbb"
+        />
+
+        {/* Filtros */}
+        <View style={styles.filterContainer}>
+          {positions.map((pos) => (
+            <TouchableOpacity
+              key={pos}
+              onPress={() =>
+                setSelectedPosition(selectedPosition === pos ? "" : pos)
+              }
+              style={[
+                styles.filterButton,
+                selectedPosition === pos && styles.activeFilter,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  selectedPosition === pos && styles.activeFilterText,
+                ]}
+              >
+                {pos}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Listado en grilla */}
+        <FlatList
+          data={filteredPlayers}
+          keyExtractor={(item, index) => (item.id ? item.id : index.toString())}
+          renderItem={({ item }) => (
+            <View style={styles.playerCard}>
+              <Image
+                source={{ uri: item.imageUrl }}
+                style={styles.playerImage}
+              />
+              <Text style={styles.playerName}>{item.name}</Text>
+              <Text style={styles.playerPosition}>{item.position}</Text>
+              <TouchableOpacity
+                style={styles.detailButton}
+                onPress={() => router.push(`/player/${item.id}`)}
+              >
+                <Text style={styles.detailButtonText}>Ver Detalles</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          showsVerticalScrollIndicator={false}
+          numColumns={2}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No se encontraron jugadores.</Text>
+          }
+        />
+      </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111", 
+    backgroundColor: "#111",
     paddingTop: 20,
     paddingHorizontal: 10,
   },
@@ -193,4 +232,3 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
-

@@ -29,13 +29,53 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        {/* Aquí cargamos el index.tsx normal */}
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        {/* Y también una pantalla para cuando no se encuentra algo */}
-        <Stack.Screen name="+not-found" options={{ title: 'Página no encontrada' }} />
+      <Stack
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#d00000', 
+          },
+          headerTintColor: '#fff', 
+          headerTitleStyle: {
+            fontWeight: 'bold', 
+            fontSize: 20, 
+          },
+          headerTitleAlign: 'center',
+        }}
+      >
+        <Stack.Screen
+          name="index"
+          options={{ 
+            headerShown: false, 
+            title: 'Inicio' 
+          }}
+        />
+        <Stack.Screen
+          name="media"
+          options={{
+            title: "Jugadores",
+          }}
+        />
+        <Stack.Screen
+          name="store"
+          options={{
+            title: "Tienda",
+          }}
+        />
+        <Stack.Screen
+          name="+not-found"
+          options={{ 
+            title: "Página no encontrada",
+            headerStyle: { backgroundColor: '#2A2A2A' } 
+          }}
+        />
+        <Stack.Screen
+          name="player/[id].tsx"
+          options={{
+            title: "JUGADOR 3",
+          }}
+        />
       </Stack>
-      <StatusBar style="auto" />
+      <StatusBar style="light" /> 
     </ThemeProvider>
   );
 }

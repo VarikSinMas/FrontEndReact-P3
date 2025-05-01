@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text, StyleSheet, FlatList, Image } from "react-native";
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from "react-native";
+import { Stack, useRouter } from "expo-router";
 
 const products = [
   { id: "1", image: require("../assets/images/merch1.jpg") },
@@ -8,6 +9,8 @@ const products = [
 ];
 
 export default function StoreScreen() {
+  const router = useRouter();
+
   const renderItem = ({ item }: { item: typeof products[0] }) => (
     <View style={styles.productCard}>
       <Image source={item.image} style={styles.productImage} />
@@ -15,17 +18,38 @@ export default function StoreScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tienda Oficial 🛒</Text>
-      <FlatList
-        data={products}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        numColumns={2} // Dos columnas
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
+    <>
+      <Stack.Screen
+        options={{
+          title: "Tienda",
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={() => router.push("/")}
+              style={{
+                marginRight: 12,
+                backgroundColor: "#fff",
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 6,
+              }}
+            >
+              <Text style={{ color: "#d00000", fontWeight: "bold" }}>Inicio</Text>
+            </TouchableOpacity>
+          ),
+        }}
       />
-    </View>
+      <View style={styles.container}>
+        <Text style={styles.title}>Tienda Oficial 🛒</Text>
+        <FlatList
+          data={products}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          numColumns={2}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
+    </>
   );
 }
 
