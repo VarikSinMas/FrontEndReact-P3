@@ -89,10 +89,7 @@ export default function Home() {
         <View style={styles.textContainer}>
           <Text style={styles.infoTitle}>Since 1979</Text>
           <Text style={styles.infoText}>
-            El DevFlow Basket Team es un grupo apasionado de jugadores que combinan talento, esfuerzo y trabajo en equipo
-            para alcanzar la victoria. Con una mezcla de experiencia y juventud, nuestro equipo se enfoca en el juego limpio,
-            la estrategia y la dedicación en cada entrenamiento. Estamos comprometidos en superarnos día a día, buscando siempre
-            mejorar y dar lo mejor en cada partido. ¡Únete a nosotros y forma parte de esta increíble familia deportiva!
+          DevFlow Basket Team combina pasión, esfuerzo y juego limpio. Con dedicación y trabajo en equipo, buscamos mejorar en cada partido. ¡Únete a esta familia deportiva!
           </Text>
         </View>
       </LinearGradient>

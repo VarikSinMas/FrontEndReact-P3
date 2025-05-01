@@ -34,6 +34,10 @@ export default function MediaScreen() {
       (selectedPosition ? player.position === selectedPosition : true)
   );
 
+  const goBack = () => {
+    router.push("/");
+  };
+
   return (
     <>
       <Stack.Screen
@@ -127,9 +131,21 @@ export default function MediaScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111",
+    backgroundColor: "#111", 
     paddingTop: 20,
     paddingHorizontal: 10,
+  },
+  backButton: {
+    marginBottom: 18,
+    alignSelf: "flex-start",
+    backgroundColor: "#222",
+    padding: 10,
+    borderRadius: 8,
+  },
+  backText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 15,
   },
   searchInput: {
     height: 40,
