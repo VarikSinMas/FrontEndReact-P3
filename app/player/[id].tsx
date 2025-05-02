@@ -1,10 +1,20 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions, Platform  } from 'react-native';
-import { getPlayers } from '../../services/playerService';
-import { Player } from '../../models/types';
-import { Video as ExpoVideo, ResizeMode } from 'expo-av';
+import React, { useEffect, useState, useRef } from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  useWindowDimensions,
+  Platform,
+} from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Video as ExpoVideo, ResizeMode } from "expo-av";
+
+import { getPlayers } from "../../services/playerService";
+import { Player } from "../../models/types";
 
 export default function PlayerDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -12,12 +22,12 @@ export default function PlayerDetailScreen() {
   const [player, setPlayer] = useState<Player | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [playerIndex, setPlayerIndex] = useState<number>(0);
+  const [zoomImageUri, setZoomImageUri] = useState<string | null>(null);
   const videoRef = useRef<ExpoVideo>(null);
-  const [timeStamp, setTimeStamp] = useState(Date.now());
   const { width: screenWidth } = useWindowDimensions();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPlayers = async () => {
       const allPlayers = await getPlayers();
       setPlayers(allPlayers);
 
@@ -26,12 +36,12 @@ export default function PlayerDetailScreen() {
 
       if (index !== -1) {
         setPlayer(allPlayers[index]);
-        setTimeStamp(Date.now());
       } else {
-        router.replace('/');
+        router.replace("/");
       }
     };
-    fetchData();
+
+    fetchPlayers();
   }, [id]);
 
   const goToPrevious = () => {
@@ -49,19 +59,38 @@ export default function PlayerDetailScreen() {
   };
 
   const goBack = () => {
-    router.replace('/');
+    router.push("/media");
   };
 
-  if (!player) return <Text style={styles.loading}>Cargando...</Text>;
+  const goHome = () => {
+    router.push("/")
+  }
+
+  if (!player) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Cargando jugador...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#111' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#111" }}>
       <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.buttons}>
         <TouchableOpacity onPress={goBack} style={styles.backButton}>
-          <Text style={styles.backText}>⬅ Listado</Text>
+          <Text style={styles.backText}>⬅ Volver</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity onPress={goHome} style={styles.backButton}>
+          <Text style={styles.backText}>Inicio</Text>
+        </TouchableOpacity>
+        </View>
+        
         <View style={styles.detailContainer}>
-          <Image source={{ uri: player.imageUrl }} style={styles.image} />
+          <TouchableOpacity onPress={() => setZoomImageUri(player.imageUrl)}>
+            <Image source={{ uri: player.imageUrl }} style={styles.image} />
+          </TouchableOpacity>
           <View style={styles.info}>
             <Text style={styles.name}>{player.name}</Text>
             <Text style={styles.detail}><Text style={styles.label}>Posición:</Text> {player.position}</Text>
@@ -71,15 +100,16 @@ export default function PlayerDetailScreen() {
             <Text style={styles.detail}><Text style={styles.label}>Equipo:</Text> {player.team}</Text>
           </View>
         </View>
+
         {player.videoUrl && (
           <View style={[styles.videoContainer, { width: screenWidth - 40, height: (screenWidth - 40) * 0.56 }]}>
             <ExpoVideo
               ref={videoRef}
-              source={{ uri: player.videoUrl }} 
+              source={{ uri: player.videoUrl }}
               useNativeControls
               resizeMode={ResizeMode.CONTAIN}
-              style={{ width: '100%', height: '100%' }}
-              videoStyle={Platform.OS === 'web' ? { position: 'relative' } : undefined}
+              style={{ width: "100%", height: "100%" }}
+              videoStyle={Platform.OS === "web" ? { position: "relative" } : undefined}
               isLooping
               shouldPlay
             />
@@ -94,121 +124,149 @@ export default function PlayerDetailScreen() {
             <Text style={styles.navText}>Siguiente</Text>
           </TouchableOpacity>
         </View>
+
+        {zoomImageUri && (
+          <View style={styles.zoomOverlay}>
+            <TouchableOpacity onPress={() => setZoomImageUri(null)} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+            <Image
+              source={{ uri: zoomImageUri }}
+              style={styles.zoomedImage}
+            />
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  loading: {
-    color: '#fff',
-    textAlign: 'center',
-    marginTop: 50,
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: "#111",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    color: "#fff",
     fontSize: 18,
+  },
+  buttons: {
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    width: "100%"
   },
   container: {
     padding: 20,
-    backgroundColor: '#111',
+    backgroundColor: "#111",
     paddingBottom: 40,
+    justifyContent: "space-between",
   },
   backButton: {
     marginBottom: 18,
-    alignSelf: 'flex-start',
-    backgroundColor: '#222',
+    alignSelf: "flex-start",
+    backgroundColor: "#222",
     padding: 10,
     borderRadius: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2,
+    flexDirection: "row",
   },
   backText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 15,
   },
   detailContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 18,
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 12,
-    elevation: 5,
-    alignItems: 'center',
+    alignItems: "center",
   },
   image: {
     width: 120,
     height: 120,
     borderRadius: 12,
     marginRight: 20,
-    borderWidth: 2,
-    borderColor: '#e0e0e0',
-    backgroundColor: '#eee',
+    backgroundColor: "#eee",
   },
   info: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   name: {
     fontSize: 26,
-    fontWeight: 'bold',
-    color: '#222',
+    fontWeight: "bold",
+    color: "#222",
     marginBottom: 8,
-    letterSpacing: 0.5,
   },
   detail: {
     fontSize: 16,
     marginBottom: 6,
-    color: '#444',
+    color: "#444",
   },
   label: {
-    fontWeight: 'bold',
-    color: '#888',
+    fontWeight: "bold",
+    color: "#888",
   },
   videoContainer: {
-    backgroundColor: '#000',
+    backgroundColor: "#000",
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#222',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
-  
-  video: {
-    width: '100%',
-    height: '100%',
-    zIndex: 1,
-  },  
-  
   navButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 16,
   },
   navButton: {
-    borderColor: '#ff3b30',
+    borderColor: "#ff3b30",
     borderWidth: 2,
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 28,
-    backgroundColor: '#222',
+    backgroundColor: "#222",
     marginHorizontal: 8,
   },
   disabled: {
-    borderColor: '#777',
+    borderColor: "#777",
     opacity: 0.5,
-    backgroundColor: '#333',
+    backgroundColor: "#333",
   },
   navText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 16,
+  },
+  zoomOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 11,
+  },
+  closeButtonText: {
+    color: 'white',
+    fontSize: 28,
+  },
+  zoomedImage: {
+    width: '90%',
+    height: '70%',
+    resizeMode: 'contain',
+    borderRadius: 12,
   },
 });

@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, Button, FlatList, Image, StyleSheet } from "react-native";
-import { Player } from "../models/types"; // Asegúrate de que la ruta sea correcta
-import { getPlayers } from "../services/playerService"; // Importa la función getPlayers de forma individual
+import { View, Text, TextInput, FlatList, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { Player } from "../models/types";
+import { getPlayers } from "../services/playerService";
+import { useRouter } from "expo-router";
 
-const MediaScreen = () => {
+const positions = ["Base", "Escolta", "Alero", "Ala-Pívot", "Pívot"];
+
+export default function MediaScreen() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [searchText, setSearchText] = useState<string>("");
   const [selectedPosition, setSelectedPosition] = useState<string>("");
+  const router = useRouter();
 
   useEffect(() => {
     const fetchPlayers = async () => {
-      const data = await getPlayers(); // Usa la función directamente
+      const data = await getPlayers();
       setPlayers(data);
     };
     fetchPlayers();
@@ -21,101 +25,191 @@ const MediaScreen = () => {
     (selectedPosition ? player.position === selectedPosition : true)
   );
 
+  const goBack = () => {
+    router.push("/");
+  };
+
   return (
     <View style={styles.container}>
+      <TouchableOpacity onPress={goBack} style={styles.backButton}>
+        <Text style={styles.backText}>⬅ Volver</Text>
+      </TouchableOpacity>
       {/* Buscador */}
       <TextInput
-        style={styles.searchBox}
+        style={styles.searchInput}
         placeholder="Buscar jugador..."
         value={searchText}
         onChangeText={setSearchText}
+        placeholderTextColor="#bbb"
       />
 
-      {/* Filtro por posición */}
+      {/* Filtros */}
       <View style={styles.filterContainer}>
-        <Text style={styles.filterLabel}>Filtrar por posición:</Text>
-        <TextInput
-          style={styles.filterInput}
-          placeholder="Escribe una posición"
-          value={selectedPosition}
-          onChangeText={setSelectedPosition}
-        />
+        {positions.map(pos => (
+          <TouchableOpacity
+            key={pos}
+            onPress={() => setSelectedPosition(selectedPosition === pos ? "" : pos)}
+            style={[
+              styles.filterButton,
+              selectedPosition === pos && styles.activeFilter
+            ]}
+          >
+            <Text style={[
+              styles.filterText,
+              selectedPosition === pos && styles.activeFilterText
+            ]}>
+              {pos}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
-      {/* Lista de jugadores */}
+      {/* Listado en grilla */}
       <FlatList
         data={filteredPlayers}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => item.id ? item.id : index.toString()}
         renderItem={({ item }) => (
           <View style={styles.playerCard}>
             <Image source={{ uri: item.imageUrl }} style={styles.playerImage} />
             <Text style={styles.playerName}>{item.name}</Text>
             <Text style={styles.playerPosition}>{item.position}</Text>
-            <Button title="Ver Detalles" onPress={() => alert(`Ver detalles de ${item.name}`)} />
+            <TouchableOpacity
+              style={styles.detailButton}
+              onPress={() => router.push(`/player/${item.id}`)}
+            >
+              <Text style={styles.detailButtonText}>Ver Detalles</Text>
+            </TouchableOpacity>
           </View>
         )}
+        showsVerticalScrollIndicator={false}
+        numColumns={2}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No se encontraron jugadores.</Text>
+        }
       />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#f4f4f4",
+    backgroundColor: "#111", 
+    paddingTop: 20,
+    paddingHorizontal: 10,
   },
-  searchBox: {
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingLeft: 10,
-    marginBottom: 20,
+  backButton: {
+    marginBottom: 18,
+    alignSelf: "flex-start",
+    backgroundColor: "#222",
+    padding: 10,
+    borderRadius: 8,
   },
-  filterContainer: {
-    marginBottom: 20,
-  },
-  filterLabel: {
-    fontSize: 16,
+  backText: {
+    color: "#fff",
     fontWeight: "bold",
-    marginBottom: 5,
+    fontSize: 15,
   },
-  filterInput: {
+  searchInput: {
     height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingLeft: 10,
-  },
-  playerCard: {
     backgroundColor: "#fff",
     borderRadius: 10,
-    padding: 15,
+    paddingHorizontal: 12,
+    color: "#000",
+    marginBottom: 15,
+    fontSize: 16,
+  },
+  filterContainer: {
+    flexDirection: "row",
     marginBottom: 20,
+    flexWrap: "wrap",
+    justifyContent: "center",
+  },
+  filterButton: {
+    borderWidth: 1,
+    borderColor: "red",
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    margin: 5,
+    backgroundColor: "#222",
+    minWidth: 80,
     alignItems: "center",
+  },
+  activeFilter: {
+    backgroundColor: "red",
+  },
+  filterText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "bold",
+  },
+  activeFilterText: {
+    color: "#fff",
+  },
+  listContent: {
+    paddingBottom: 30,
+    alignItems: "center",
+  },
+  playerCard: {
+    backgroundColor: "#333",
+    borderRadius: 12,
+    padding: 15,
+    margin: 10,
+    width: 180,
+    alignItems: "center",
+    justifyContent: "center",
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 5 },
-    shadowRadius: 10,
-    elevation: 3, // Solo para Android
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: "#222",
   },
   playerImage: {
-    width: 120,
-    height: 120,
+    width: 100,
+    height: 100,
     borderRadius: 10,
     marginBottom: 10,
+    resizeMode: "cover",
+    backgroundColor: "#222",
   },
   playerName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 5,
+    color: "#fff",
+    textAlign: "center",
+    marginBottom: 2,
   },
   playerPosition: {
     fontSize: 14,
-    color: "#777",
-    marginBottom: 15,
+    color: "#ccc",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  detailButton: {
+    backgroundColor: "red",
+    paddingVertical: 7,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    marginTop: 6,
+    shadowColor: "#d00000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  detailButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  emptyText: {
+    color: "#fff",
+    fontSize: 16,
+    marginTop: 40,
+    textAlign: "center",
   },
 });
 
-export default MediaScreen;

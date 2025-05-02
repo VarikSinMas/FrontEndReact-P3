@@ -8,7 +8,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
+// Evitar que el SplashScreen se oculte automáticamente
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -30,9 +30,10 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        {/* Asegúrate de que las pantallas no tengan header */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" options={{ headerShown: false }} />
+        {/* Aquí cargamos el index.tsx normal */}
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        {/* Y también una pantalla para cuando no se encuentra algo */}
+        <Stack.Screen name="+not-found" options={{ title: 'Página no encontrada' }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
